@@ -31,11 +31,21 @@ int uni(int s, int g){
 int negation(int s,int g){
 	return s - g;
 }
+
 /*
-* The fastest player in a given set S.
+*	makes a binary representation for a singleton set
+*	containing a person i.( indexed from 0), which is simply 2^i.
+*/
+int make_set(int i){
+	return pow(2,i);
+}
+
+
+/*
+* The fastest person in a given set S.
 * In the binary representation of S,
 * 	if bit at index i == 1,
-* 		check if the player has speed less than the current min speed.
+* 		check if the person has speed less than the current min speed.
 */
 int fastest(int s){
 	int i = 0;
@@ -55,11 +65,26 @@ int fastest(int s){
 }
 
 /*
-*	makes a binary representation for a singleton set
-*	containing a person i.( indexed from 0), which is simply 2^i.
+*	returns the time taken to transfer the set
+*	completely from the South to North bank.
+* This is equal to the time taken to cross the bridge,
+* by the slowest person in the set.
 */
-int make_set(int i){
-	return pow(2,i);
+int complete_time(int s){
+	int i = 0;
+	int f = 0,max_t = INT_MIN;
+	while(s>0){
+		int k = s%2;
+		if(k){
+			if(t[i]>max_t){
+				max_t = t[i];
+				f = i;
+			}
+		}
+		i++;
+		s /=2;
+	}
+	return f;
 }
 
 /*
@@ -71,6 +96,15 @@ int next(int s, int g){
 	return union(negation(s,g), make_set(returning_person));
 }
 
+/*
+*	The time taken to move the subset G of S from South to north and
+*	return the fastest person on the northern bank with the torch.
+* which is complete_time(G) + fastest in (P-S) U G .
+*/
+int T(int s,int g){
+	int people_north = uni(comp(s),g);
+	return complete_time(g) + t[fastest(people_north)];
+}
 /*
 * Calculates the minimum time required to move
 *	a set S of people on the southern bank to the north.
