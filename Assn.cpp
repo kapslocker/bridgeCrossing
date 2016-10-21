@@ -6,9 +6,9 @@ using namespace std;
 
 const int MAX_P = 10;
 int dp[1024];	// Saves f(S) for a given mask. (The masks <1024 => # of people less than 10. )
-int n;		// The number of people.
+int n;				// The number of people.
 int t[MAX_P];	// The time taken for an individual person to cross the bridge.
-
+int C;				// The capacity of a boat.
 /*
 * Evaluates the complement of a given set S (mask s).
 * Complement is the value 1111..MAX_P times - s.
@@ -40,6 +40,9 @@ int make_set(int i){
 	return pow(2,i);
 }
 
+int cardinality(int s){
+	return __builtin_popcount(s);
+}
 
 /*
 * The fastest person in a given set S.
@@ -93,7 +96,7 @@ int complete_time(int s){
 int next(int s, int g){
 	int people_north = uni(comp(s),g);
 	int returning_person = fastest(people_north);
-	return union(negation(s,g), make_set(returning_person));
+	return uni(negation(s,g), make_set(returning_person));
 }
 
 /*
@@ -104,6 +107,44 @@ int next(int s, int g){
 int T(int s,int g){
 	int people_north = uni(comp(s),g);
 	return complete_time(g) + t[fastest(people_north)];
+}
+
+/*
+* The time taken to transfer a set S from the south bank to the north bank.
+* The function is defined later.
+*/
+int f(int s);
+
+/*
+* The time to transfer a set S from south to north, given that G go first.
+* with |G|<=C.
+*/
+int f(int s,int g){
+	if(cardinality(s)<C)
+		return complete_time(s);
+
+	return T(s,g) + f(next(s,g));
+}
+
+int genf(){
+	int p = 1;
+	for(int i=0;i<MAX_P;i++){
+		dp[p] = t[i];
+		p*=2;
+	}
+	for(int i = 1;i<p;i++){
+		if(dp[i]==0){
+			if(cardinality(i)<=C){
+				dp[i] = complete_time(i);
+			}
+
+		}
+	}
+}
+
+
+int f(int s){
+	return dp[s];
 }
 /*
 * Calculates the minimum time required to move
